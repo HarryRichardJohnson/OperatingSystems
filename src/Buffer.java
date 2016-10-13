@@ -12,15 +12,16 @@ public class Buffer{
     //more private fields such as a container object for holding the buffer items
     private Object[] intArray;
 
-    public Buffer() {
+    public Buffer() throws InterruptedException {
         // your code
         intArray = new Object[Constants.BUFFER_SIZE];
         for(int i = 0; i < intArray.length; i++){
             intArray[i] = null;
         }
-        empty = new Semaphore(1);
-        full = new Semaphore(1);
+        empty = new Semaphore(5);
+        full = new Semaphore(5);
         mutex = new Semaphore(1);
+        empty.acquire(5);
     }
 
     public int insert_item(Object item) throws InterruptedException {
@@ -34,11 +35,11 @@ public class Buffer{
                 for(int i = 0; i < intArray.length; i++){
                     if(intArray[i] == null){
                         intArray[i] = item;
-                        if (i == intArray.length){
-                            full.acquire();
-                        }
                     }
                 }
+                full.acquire();
+                empty.release();
+
             }else{
                 System.out.println("Array is full");
                 mutex.release();
@@ -63,14 +64,13 @@ public class Buffer{
             if (empty.availablePermits() > 0){
                 //critical section
                 //insert the item
-                for(int i = 0; i < intArray.length; i++){
-                    if(intArray[i] != null){
+                for(int i = 0; i < intArray.length; i++) {
+                    if (intArray[i] != null) {
                         intArray[i] = null;
-                        if(full.availablePermits() == 0){
-                            full.release();
-                        }
                     }
                 }
+                full.release();
+                empty.acquire();
             }else{
                 System.out.println("Array is empty");
                 mutex.release();
