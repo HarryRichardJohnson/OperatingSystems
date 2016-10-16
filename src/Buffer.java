@@ -29,18 +29,19 @@ public class Buffer{
         //acquire semaphores
         try {
             mutex.acquire();
-            if (full.availablePermits() > 0){
+            if (full.availablePermits() > 0) {
                 //critical section
                 //insert the item
-                for(int i = 0; i < intArray.length; i++){
-                    if(intArray[i] == null){
+                for (int i = 0; i < intArray.length; i++) {
+                    if (intArray[i] == null) {
                         intArray[i] = item;
+                        break;
                     }
                 }
                 full.acquire();
                 empty.release();
 
-            }else{
+            } else {
                 System.out.println("Array is full");
                 mutex.release();
                 return 0;
@@ -53,6 +54,10 @@ public class Buffer{
         }
         //release semaphores
         mutex.release();
+        for (int i = 0; i < intArray.length; i++) {
+            System.out.print("Buffer at index "+i+" holds "+intArray[i]+"  ");
+        }
+        System.out.println();
         return 1;
     }
 
@@ -80,6 +85,10 @@ public class Buffer{
             e.printStackTrace();
             System.out.println("Mutex unavailable");
             mutex.release();
+            for (int i = 0; i < intArray.length; i++) {
+                System.out.print("Buffer at index "+i+" holds "+intArray[i]+"  ");
+            }
+            System.out.println();
             return 0;
         }
         //release semaphores
